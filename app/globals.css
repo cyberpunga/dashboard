@@ -196,6 +196,56 @@
   animation: sweep 6s linear infinite;
 }
 
+.literary-line {
+  min-height: 1rem;
+}
+
+.redacted-word {
+  display: inline-block;
+  min-width: 4ch;
+}
+
+.redacted-word.is-redacted {
+  color: oklch(0.72 0.18 120);
+  text-shadow: 0 0 5px currentColor;
+}
+
+.corrupt-line {
+  animation: text-corrupt 5s steps(1, end) infinite;
+}
+
+@keyframes text-corrupt {
+  0%,
+  79%,
+  100% {
+    filter: none;
+    transform: translateX(0);
+  }
+  80% {
+    filter: brightness(1.5);
+    transform: translateX(0.5px);
+  }
+  82% {
+    filter: brightness(0.8);
+    transform: translateX(-0.5px);
+  }
+  84% {
+    filter: none;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-blink,
+  .cursor-blink-invert,
+  .blink-fast,
+  .blink-slow,
+  .crt::after,
+  .corrupt-line {
+    animation: none;
+  }
+}
+
 /* Thin retro scrollbars for TUI panes */
 .tui-scroll::-webkit-scrollbar {
   width: 6px;

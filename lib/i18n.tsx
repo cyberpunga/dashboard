@@ -47,6 +47,7 @@ const messages = {
     panels: {
       threatBoard: "THREAT BOARD",
       dossier: "DOSSIER: {name}",
+      fieldNotes: "FIELD NOTES",
       computePower: "COMPUTE POWER // 5MO",
       intelFeed: "INTEL FEED",
       projection: "PROJECTION",
@@ -81,7 +82,14 @@ const messages = {
       linking: "> linking neural uplink ........... OK",
       calibrating: "> calibrating sensors ............. OK",
       auth: "> AUTH level 5 granted ............ OK",
+      fixated: "> operator fixated: {name}",
+      drift: "> interpretive drift: {drift}",
+      resists: "> dossier resists summary",
       awaiting: "> awaiting command ",
+    },
+    transmission: {
+      label: "TRANSMISSION",
+      fallback: "The future arrives first as a formatting problem.",
     },
     status: {
       clearance: "CLEARANCE: LVL 5",
@@ -112,6 +120,7 @@ const messages = {
     panels: {
       threatBoard: "TABLERO DE AMENAZAS",
       dossier: "EXPEDIENTE: {name}",
+      fieldNotes: "NOTAS DE CAMPO",
       computePower: "PODER DE COMPUTO // 5M",
       intelFeed: "FLUJO DE INTEL",
       projection: "PROYECCION",
@@ -146,7 +155,14 @@ const messages = {
       linking: "> enlazando uplink neural .......... OK",
       calibrating: "> calibrando sensores .............. OK",
       auth: "> autorizacion nivel 5 otorgada .... OK",
+      fixated: "> operador fijado: {name}",
+      drift: "> deriva interpretativa: {drift}",
+      resists: "> el expediente resiste resumen",
       awaiting: "> esperando comando ",
+    },
+    transmission: {
+      label: "TRANSMISION",
+      fallback: "El futuro aparece primero como problema de formato.",
     },
     status: {
       clearance: "ACCESO: NIVEL 5",
@@ -177,6 +193,7 @@ const messages = {
     panels: {
       threatBoard: "TABLEAU DES MENACES",
       dossier: "DOSSIER : {name}",
+      fieldNotes: "NOTES TERRAIN",
       computePower: "PUISSANCE CALCUL // 5M",
       intelFeed: "FLUX RENSEIGN.",
       projection: "PROJECTION",
@@ -211,7 +228,14 @@ const messages = {
       linking: "> liaison uplink neuronal .......... OK",
       calibrating: "> calibration capteurs ............. OK",
       auth: "> autorisation niveau 5 accordee ... OK",
+      fixated: "> operateur fixe: {name}",
+      drift: "> derive interpretative: {drift}",
+      resists: "> le dossier resiste au resume",
       awaiting: "> en attente de commande ",
+    },
+    transmission: {
+      label: "TRANSMISSION",
+      fallback: "Le futur apparait d'abord comme probleme de format.",
     },
     status: {
       clearance: "ACCES : NIV 5",

@@ -124,6 +124,29 @@ function Cursor() {
   return <span className="cursor-blink">█</span>
 }
 
+function RedactedText({ text, active }: { text: string; active: boolean }) {
+  let redacted = 0
+
+  return (
+    <>
+      {text.split(/(\s+)/).map((part, index) => {
+        const word = part.replace(/[^A-Za-z]/g, "")
+        const shouldRedact = word.length > 7 && (index + text.length) % 9 === 0 && redacted < 3
+
+        if (!part.trim() || !shouldRedact) return part
+
+        redacted += 1
+
+        return (
+          <span key={`${part}-${index}`} className={active ? "redacted-word is-redacted" : "redacted-word"}>
+            {active ? "█".repeat(part.length) : part}
+          </span>
+        )
+      })}
+    </>
+  )
+}
+
 /* -------------------------------- dashboard ------------------------------- */
 
 export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboardProps) {
@@ -133,6 +156,7 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
   const [tick, setTick] = useState(0)
   const [bootLines, setBootLines] = useState<string[]>([])
   const sessionId = useRef(Math.random().toString(36).slice(2, 10).toUpperCase())
+  const previousSelected = useRef(selected)
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
@@ -169,6 +193,8 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
   const totalIncidents = data.companies.reduce((s, c) => s + c.recentIncidents, 0)
   const avg = Math.round(data.companies.reduce((s, c) => s + c.probability, 0) / data.companies.length)
   const sel = data.companies.find((c) => c.id === selected)!
+  const activeNote = sel.fieldNotes[Math.floor(tick / 5) % sel.fieldNotes.length] ?? t("transmission.fallback")
+  const redactionActive = tick % 8 === 5 || tick % 13 === 9
 
   // Sorted by probability for the threat board.
   const sorted = [...data.companies].sort((a, b) => b.probability - a.probability)
@@ -181,6 +207,18 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
     { key: "nexus", label: "NEXS", color: "text-yellow-400" },
     { key: "cortex", label: "CRTX", color: "text-green-400" },
   ]
+
+  useEffect(() => {
+    if (previousSelected.current === selected) return
+
+    previousSelected.current = selected
+    setBootLines((lines) => [
+      ...lines.slice(-8),
+      t("boot.fixated", { name: sel.shortName.toUpperCase() }),
+      t("boot.drift", { drift: (sel.probability / 100).toFixed(2) }),
+      t("boot.resists"),
+    ])
+  }, [selected, sel.probability, sel.shortName, t])
 
   return (
     <div className="crt min-h-screen bg-black text-green-400 font-mono text-[13px] leading-tight p-3 selection:bg-green-400 selection:text-black">
@@ -295,9 +333,25 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
               </div>
               <div className="border-t border-green-900 my-1" />
               <p className="text-green-500 leading-relaxed">
-                {sel.details}
+                <RedactedText text={sel.details} active={redactionActive} />
                 <Cursor />
               </p>
+            </div>
+          </Panel>
+
+          <Panel title={t("panels.fieldNotes")} accent="text-green-600">
+            <div className="text-xs space-y-1">
+              {sel.fieldNotes.map((note, index) => (
+                <div
+                  key={note}
+                  className={`literary-line flex gap-2 ${
+                    note === activeNote ? "text-green-300 corrupt-line" : "text-green-700"
+                  }`}
+                >
+                  <span className="text-green-800">{String(index + 1).padStart(2, "0")}</span>
+                  <span>{note}</span>
+                </div>
+              ))}
             </div>
           </Panel>
 
@@ -375,6 +429,12 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
             </div>
           </Panel>
         </div>
+      </div>
+
+      {/* ============================ TRANSMISSION ============================ */}
+      <div className="mt-2 border border-green-900 px-2 py-1 text-[11px] text-green-500">
+        <span className="text-green-700">{t("transmission.label")}:</span>{" "}
+        <span className="corrupt-line text-green-300">{activeNote}</span>
       </div>
 
       {/* ============================== BOOT LOG ============================== */}
