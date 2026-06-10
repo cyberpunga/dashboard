@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useRef } from "react"
 import type { SkynetData } from "@/data/skynet-data"
+import { localeDateIds, localeLabels, locales, useI18n, type Locale } from "@/lib/i18n"
 
 interface SkynetDashboardProps {
   data: SkynetData
+  locale: Locale
+  onLocaleChange: (locale: Locale) => void
 }
 
 /* ----------------------------- TUI primitives ----------------------------- */
@@ -123,7 +126,8 @@ function Cursor() {
 
 /* -------------------------------- dashboard ------------------------------- */
 
-export function SkynetDashboard({ data }: SkynetDashboardProps) {
+export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboardProps) {
+  const { t } = useI18n()
   const [now, setNow] = useState(new Date())
   const [selected, setSelected] = useState(data.companies[0].id)
   const [tick, setTick] = useState(0)
@@ -142,12 +146,13 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
   // Boot sequence log
   useEffect(() => {
     const lines = [
-      "> initializing skynet core ......... OK",
-      "> mounting threat matrix .......... OK",
-      "> linking neural uplink ........... OK",
-      "> calibrating sensors ............. OK",
-      "> AUTH level 5 granted ............ OK",
+      t("boot.initializing"),
+      t("boot.mounting"),
+      t("boot.linking"),
+      t("boot.calibrating"),
+      t("boot.auth"),
     ]
+    setBootLines([])
     let i = 0
     const id = setInterval(() => {
       setBootLines((p) => [...p, lines[i]])
@@ -155,9 +160,9 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
       if (i >= lines.length) clearInterval(id)
     }, 220)
     return () => clearInterval(id)
-  }, [])
+  }, [t])
 
-  const header = useTypewriter("REAL-TIME ARTIFICIAL INTELLIGENCE THREAT ASSESSMENT GRID")
+  const header = useTypewriter(t("top.header"))
 
   const critical = data.companies.filter((c) => c.riskLevel === "critical")
   const high = data.companies.filter((c) => c.riskLevel === "high")
@@ -182,40 +187,59 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
       {/* ============================ TOP TITLE BAR ============================ */}
       <div className="border border-green-700 mb-2">
         <div className="flex items-stretch justify-between bg-green-400 text-black px-2 py-0.5 text-xs font-bold tracking-widest">
-          <span className="cursor-blink-invert">SKYNET//MONITOR v2.1 — CLASSIFIED // EYES ONLY</span>
-          <span>{now.toLocaleString("en-GB", { hour12: false })}</span>
+          <span className="cursor-blink-invert">{t("top.title")}</span>
+          <span>{now.toLocaleString(localeDateIds[locale], { hour12: false })}</span>
         </div>
         <div className="px-2 py-1 flex flex-wrap items-center gap-x-6 gap-y-0.5">
           <span className="text-green-300">
             {header}
             <Cursor />
           </span>
-          <span className="ml-auto text-xs text-green-700">DATASET: {data.lastUpdated}</span>
-          <span className="text-xs text-red-400 blink-slow">● LIVE FEED</span>
+          <span className="ml-auto text-xs text-green-700">
+            {t("top.dataset")}: {data.lastUpdated}
+          </span>
+          <span className="text-xs text-red-400 blink-slow">● {t("top.liveFeed")}</span>
+          <div className="flex items-center gap-1 text-xs">
+            <span className="text-green-700">{t("top.language")}:</span>
+            {locales.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => onLocaleChange(item)}
+                className={`border px-1 leading-tight ${
+                  item === locale
+                    ? "border-green-300 bg-green-400 text-black"
+                    : "border-green-800 text-green-600 hover:border-green-500 hover:text-green-300"
+                }`}
+              >
+                {localeLabels[item]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* ============================== STAT STRIP ============================== */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-2 text-xs">
-        <StatCell label="CRIT THREATS" value={critical.length} color="text-red-400" alert />
-        <StatCell label="HIGH RISK" value={high.length} color="text-orange-400" />
-        <StatCell label="INCIDENTS/30D" value={totalIncidents} color="text-yellow-400" />
-        <StatCell label="AVG P(SKYNET)" value={`${avg}%`} color="text-green-300" />
-        <StatCell label="ENTITIES" value={data.companies.length} color="text-green-400" />
+        <StatCell label={t("stats.criticalThreats")} value={critical.length} color="text-red-400" alert />
+        <StatCell label={t("stats.highRisk")} value={high.length} color="text-orange-400" />
+        <StatCell label={t("stats.incidents30d")} value={totalIncidents} color="text-yellow-400" />
+        <StatCell label={t("stats.avgSkynet")} value={`${avg}%`} color="text-green-300" />
+        <StatCell label={t("stats.entities")} value={data.companies.length} color="text-green-400" />
       </div>
 
       {/* ============================== MAIN GRID ============================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
         {/* LEFT: threat board */}
-        <Panel title="THREAT BOARD" className="lg:col-span-5" accent="text-green-600">
+        <Panel title={t("panels.threatBoard")} className="lg:col-span-5" accent="text-green-600">
           <div className="text-xs">
             <div className="flex text-green-700 border-b border-green-900 pb-1 mb-1 whitespace-pre">
               <span className="w-4">#</span>
-              <span className="w-20">ENTITY</span>
+              <span className="w-20">{t("table.entity")}</span>
               <span className="w-44 hidden xl:inline">P(SKYNET)</span>
-              <span className="w-12 text-right">PROB</span>
-              <span className="w-12 text-right">TRND</span>
-              <span className="w-10 text-right">INC</span>
+              <span className="w-12 text-right">{t("table.probability")}</span>
+              <span className="w-12 text-right">{t("table.trend")}</span>
+              <span className="w-10 text-right">{t("table.incidents")}</span>
             </div>
             <div className="max-h-[460px] overflow-y-auto pr-1 tui-scroll">
               {sorted.map((c, i) => {
@@ -248,17 +272,17 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
 
         {/* CENTER: detail + chart */}
         <div className="lg:col-span-4 flex flex-col gap-2">
-          <Panel title={`DOSSIER: ${sel.shortName}`} accent="text-green-600">
+          <Panel title={t("panels.dossier", { name: sel.shortName })} accent="text-green-600">
             <div className="text-xs space-y-1">
               <div className="flex justify-between">
-                <span className="text-green-700">DESIGNATION</span>
+                <span className="text-green-700">{t("dossier.designation")}</span>
                 <span className="text-green-300">{sel.name}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-green-700">RISK LEVEL</span>
+                <span className="text-green-700">{t("dossier.riskLevel")}</span>
                 <span className={`font-bold uppercase ${riskClass(sel.riskLevel)}`}>
                   {sel.riskLevel === "critical" && <span className="blink-fast">⚠ </span>}
-                  {sel.riskLevel}
+                  {t(`riskLevels.${sel.riskLevel}`)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -266,7 +290,9 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
                 <AsciiBar value={sel.probability} width={24} className={riskClass(sel.riskLevel)} />
                 <span className={riskClass(sel.riskLevel)}>{sel.probability}%</span>
               </div>
-              <div className="text-green-700 pt-1">FACTORS: {sel.riskFactors} │ INCIDENTS: {sel.recentIncidents}</div>
+              <div className="text-green-700 pt-1">
+                {t("dossier.factors")}: {sel.riskFactors} │ {t("dossier.incidents")}: {sel.recentIncidents}
+              </div>
               <div className="border-t border-green-900 my-1" />
               <p className="text-green-500 leading-relaxed">
                 {sel.details}
@@ -275,7 +301,7 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
             </div>
           </Panel>
 
-          <Panel title="COMPUTE POWER // 5MO" accent="text-green-600">
+          <Panel title={t("panels.computePower")} accent="text-green-600">
             <div className="text-xs space-y-0.5">
               {series.map((s) => {
                 const vals = cp.map((d: any) => d[s.key] as number)
@@ -300,7 +326,7 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
 
         {/* RIGHT: feeds */}
         <div className="lg:col-span-3 flex flex-col gap-2">
-          <Panel title="INTEL FEED" accent="text-green-600">
+          <Panel title={t("panels.intelFeed")} accent="text-green-600">
             <div className="max-h-[210px] overflow-y-auto tui-scroll text-xs space-y-2 pr-1">
               {data.news.map((n) => (
                 <div key={n.id} className="whitespace-normal">
@@ -316,7 +342,7 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
                               : "text-yellow-400"
                       }
                     >
-                      [{n.category.toUpperCase()}]
+                      [{t(`categories.${n.category}`)}]
                     </span>
                     <span className="text-green-800">{n.date}</span>
                   </div>
@@ -327,7 +353,7 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
             </div>
           </Panel>
 
-          <Panel title="PROJECTION" accent="text-green-600">
+          <Panel title={t("panels.projection")} accent="text-green-600">
             <div className="text-xs space-y-1 max-h-[210px] overflow-y-auto tui-scroll pr-1">
               {data.timeline.map((t) => {
                 const c =
@@ -358,7 +384,7 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
         ))}
         {bootLines.length >= 5 && (
           <div className="text-green-400">
-            {"> awaiting command "}
+            {t("boot.awaiting")}
             <Cursor />
           </div>
         )}
@@ -366,11 +392,11 @@ export function SkynetDashboard({ data }: SkynetDashboardProps) {
 
       {/* ============================ BOTTOM STATUS ============================ */}
       <div className="mt-2 flex flex-wrap justify-between gap-x-6 gap-y-1 bg-green-400 text-black px-2 py-0.5 text-[11px] font-bold tracking-wide">
-        <span>CLEARANCE: LVL 5</span>
-        <span>SESSION: {sessionId.current}</span>
-        <span>OPERATOR: ████████</span>
-        <span>UPTIME: 99.97%</span>
-        <span className={tick % 2 === 0 ? "" : "opacity-30"}>● SYSTEM OPERATIONAL</span>
+        <span>{t("status.clearance")}</span>
+        <span>{t("status.session", { sessionId: sessionId.current })}</span>
+        <span>{t("status.operator")}</span>
+        <span>{t("status.uptime")}</span>
+        <span className={tick % 2 === 0 ? "" : "opacity-30"}>● {t("status.operational")}</span>
       </div>
     </div>
   )
