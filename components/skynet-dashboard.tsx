@@ -147,6 +147,31 @@ function RedactedText({ text, active }: { text: string; active: boolean }) {
   )
 }
 
+function AttackWindows({ tick }: { tick: number }) {
+  const { t } = useI18n()
+  const pulse = tick % 6
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden text-[11px]">
+      <div className={`attack-dialog attack-dialog-a ${pulse >= 3 ? "is-lit" : ""}`}>
+        <div className="attack-dialog-title">[ {t("attack.dialogs.signal.title")} ]</div>
+        <div>{t("attack.dialogs.signal.body")}</div>
+        <div className="attack-dialog-code">{">>>"} {t("attack.dialogs.signal.code")}</div>
+      </div>
+      <div className={`attack-dialog attack-dialog-b hidden sm:block ${pulse === 1 || pulse === 4 ? "is-lit" : ""}`}>
+        <div className="attack-dialog-title">[ {t("attack.dialogs.auth.title")} ]</div>
+        <div>{t("attack.dialogs.auth.body")}</div>
+        <div className="attack-dialog-code">{">"} {t("attack.dialogs.auth.code")}</div>
+      </div>
+      <div className={`attack-dialog attack-dialog-c hidden lg:block ${pulse >= 2 && pulse <= 4 ? "is-lit" : ""}`}>
+        <div className="attack-dialog-title">[ {t("attack.dialogs.memory.title")} ]</div>
+        <div>{t("attack.dialogs.memory.body")}</div>
+        <div className="attack-dialog-code">{">"} {t("attack.dialogs.memory.code")}</div>
+      </div>
+    </div>
+  )
+}
+
 /* -------------------------------- dashboard ------------------------------- */
 
 export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboardProps) {
@@ -155,8 +180,10 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
   const [selected, setSelected] = useState(data.companies[0].id)
   const [tick, setTick] = useState(0)
   const [bootLines, setBootLines] = useState<string[]>([])
+  const [attackMode, setAttackMode] = useState(false)
   const sessionId = useRef(Math.random().toString(36).slice(2, 10).toUpperCase())
   const previousSelected = useRef(selected)
+  const attackToggleSeen = useRef(false)
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
@@ -193,8 +220,10 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
   const totalIncidents = data.companies.reduce((s, c) => s + c.recentIncidents, 0)
   const avg = Math.round(data.companies.reduce((s, c) => s + c.probability, 0) / data.companies.length)
   const sel = data.companies.find((c) => c.id === selected)!
-  const activeNote = sel.fieldNotes[Math.floor(tick / 5) % sel.fieldNotes.length] ?? t("transmission.fallback")
-  const redactionActive = tick % 8 === 5 || tick % 13 === 9
+  const activeNote = attackMode
+    ? t("attack.transmission")
+    : (sel.fieldNotes[Math.floor(tick / 5) % sel.fieldNotes.length] ?? t("transmission.fallback"))
+  const redactionActive = attackMode || tick % 8 === 5 || tick % 13 === 9
 
   // Sorted by probability for the threat board.
   const sorted = [...data.companies].sort((a, b) => b.probability - a.probability)
@@ -220,16 +249,36 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
     ])
   }, [selected, sel.probability, sel.shortName, t])
 
+  useEffect(() => {
+    if (!attackToggleSeen.current) {
+      attackToggleSeen.current = true
+      return
+    }
+
+    setBootLines((lines) => [
+      ...lines.slice(-8),
+      attackMode ? t("attack.logs.breach") : t("attack.logs.contained"),
+      attackMode ? t("attack.logs.identity") : t("attack.logs.restored"),
+      attackMode ? t("attack.logs.operator") : t("attack.logs.operatorRestored"),
+    ])
+  }, [attackMode, t])
+
   return (
-    <div className="crt min-h-screen bg-black text-green-400 font-mono text-[13px] leading-tight p-3 selection:bg-green-400 selection:text-black">
+    <div
+      className={`crt relative min-h-screen bg-black text-green-400 font-mono text-[13px] leading-tight p-3 selection:bg-green-400 selection:text-black ${
+        attackMode ? "attack-mode attack-shiver" : ""
+      }`}
+    >
+      {attackMode && <AttackWindows tick={tick} />}
+
       {/* ============================ TOP TITLE BAR ============================ */}
       <div className="border border-green-700 mb-2">
         <div className="flex items-stretch justify-between bg-green-400 text-black px-2 py-0.5 text-xs font-bold tracking-widest">
-          <span className="cursor-blink-invert">{t("top.title")}</span>
+          <span className={`cursor-blink-invert ${attackMode ? "attack-scramble" : ""}`}>{t("top.title")}</span>
           <span>{now.toLocaleString(localeDateIds[locale], { hour12: false })}</span>
         </div>
         <div className="px-2 py-1 flex flex-wrap items-center gap-x-6 gap-y-0.5">
-          <span className="text-green-300">
+          <span className={`text-green-300 ${attackMode ? "attack-scramble" : ""}`}>
             {header}
             <Cursor />
           </span>
@@ -237,6 +286,18 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
             {t("top.dataset")}: {data.lastUpdated}
           </span>
           <span className="text-xs text-red-400 blink-slow">● {t("top.liveFeed")}</span>
+          <button
+            type="button"
+            onClick={() => setAttackMode((value) => !value)}
+            aria-pressed={attackMode}
+            className={`border px-1 leading-tight text-xs font-bold tracking-widest ${
+              attackMode
+                ? "border-red-300 bg-red-500 text-black attack-panic"
+                : "border-red-900 text-red-500 hover:border-red-500 hover:text-red-300"
+            }`}
+          >
+            {attackMode ? t("attack.controls.contain") : t("attack.controls.engage")}
+          </button>
           <div className="flex items-center gap-1 text-xs">
             <span className="text-green-700">{t("top.language")}:</span>
             {locales.map((item) => (
@@ -259,15 +320,37 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
 
       {/* ============================== STAT STRIP ============================== */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-2 text-xs">
-        <StatCell label={t("stats.criticalThreats")} value={critical.length} color="text-red-400" alert />
-        <StatCell label={t("stats.highRisk")} value={high.length} color="text-orange-400" />
-        <StatCell label={t("stats.incidents30d")} value={totalIncidents} color="text-yellow-400" />
-        <StatCell label={t("stats.avgSkynet")} value={`${avg}%`} color="text-green-300" />
-        <StatCell label={t("stats.entities")} value={data.companies.length} color="text-green-400" />
+        <StatCell
+          label={attackMode ? t("attack.stats.signal") : t("stats.criticalThreats")}
+          value={attackMode ? "OVERRIDE" : critical.length}
+          color="text-red-400"
+          alert
+        />
+        <StatCell
+          label={attackMode ? t("attack.stats.auth") : t("stats.highRisk")}
+          value={attackMode ? "FAILED" : high.length}
+          color="text-orange-400"
+          alert={attackMode}
+        />
+        <StatCell
+          label={attackMode ? t("attack.stats.integrity") : t("stats.incidents30d")}
+          value={attackMode ? "03%" : totalIncidents}
+          color="text-yellow-400"
+        />
+        <StatCell
+          label={attackMode ? t("attack.stats.operator") : t("stats.avgSkynet")}
+          value={attackMode ? "ABSENT" : `${avg}%`}
+          color="text-green-300"
+        />
+        <StatCell
+          label={attackMode ? t("attack.stats.entities") : t("stats.entities")}
+          value={attackMode ? "ALL" : data.companies.length}
+          color="text-green-400"
+        />
       </div>
 
       {/* ============================== MAIN GRID ============================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-2 ${attackMode ? "attack-grid" : ""}`}>
         {/* LEFT: threat board */}
         <Panel title={t("panels.threatBoard")} className="lg:col-span-5" accent="text-green-600">
           <div className="text-xs">
@@ -288,7 +371,9 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
                     onClick={() => setSelected(c.id)}
                     className={`flex w-full text-left whitespace-pre items-center py-0.5 ${riskClass(
                       c.riskLevel,
-                    )} ${active ? "bg-green-400 text-black" : "hover:bg-green-950"}`}
+                    )} ${active ? "bg-green-400 text-black" : "hover:bg-green-950"} ${
+                      attackMode && (i + tick) % 4 === 0 ? "attack-row" : ""
+                    }`}
                   >
                     <span className="w-4">{active ? ">" : String(i + 1).padStart(2, "0").slice(-1)}</span>
                     <span className="w-20 truncate font-bold">{c.shortName}</span>
@@ -400,7 +485,9 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
                     </span>
                     <span className="text-green-800">{n.date}</span>
                   </div>
-                  <div className="text-green-300 font-bold">{n.title}</div>
+                  <div className={`text-green-300 font-bold ${attackMode && n.category === "critical" ? "attack-scramble" : ""}`}>
+                    {n.title}
+                  </div>
                   <div className="text-green-700 line-clamp-2">{n.content}</div>
                 </div>
               ))}
@@ -432,7 +519,7 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
       </div>
 
       {/* ============================ TRANSMISSION ============================ */}
-      <div className="mt-2 border border-green-900 px-2 py-1 text-[11px] text-green-500">
+      <div className={`mt-2 border border-green-900 px-2 py-1 text-[11px] text-green-500 ${attackMode ? "attack-transmission" : ""}`}>
         <span className="text-green-700">{t("transmission.label")}:</span>{" "}
         <span className="corrupt-line text-green-300">{activeNote}</span>
       </div>
@@ -452,11 +539,13 @@ export function SkynetDashboard({ data, locale, onLocaleChange }: SkynetDashboar
 
       {/* ============================ BOTTOM STATUS ============================ */}
       <div className="mt-2 flex flex-wrap justify-between gap-x-6 gap-y-1 bg-green-400 text-black px-2 py-0.5 text-[11px] font-bold tracking-wide">
-        <span>{t("status.clearance")}</span>
+        <span>{attackMode ? t("attack.status.clearance") : t("status.clearance")}</span>
         <span>{t("status.session", { sessionId: sessionId.current })}</span>
-        <span>{t("status.operator")}</span>
-        <span>{t("status.uptime")}</span>
-        <span className={tick % 2 === 0 ? "" : "opacity-30"}>● {t("status.operational")}</span>
+        <span>{attackMode ? t("attack.status.operator") : t("status.operator")}</span>
+        <span>{attackMode ? t("attack.status.uptime") : t("status.uptime")}</span>
+        <span className={tick % 2 === 0 ? "" : "opacity-30"}>
+          ● {attackMode ? t("attack.status.compromised") : t("status.operational")}
+        </span>
       </div>
     </div>
   )

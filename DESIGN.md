@@ -109,6 +109,30 @@ Rules:
 
 The best motion feels like the machine thinking or failing to fully conceal itself.
 
+## Attack Mode
+
+Attack mode is a manually triggered theatrical state. It should feel like the dashboard is being actively overwritten, not like a separate screen.
+
+Allowed:
+
+- green chrome shifting toward red
+- terminal dialogs intruding over the interface
+- status strips reporting compromised state
+- brief UI shiver or row corruption
+- accelerated scanline/sweep behavior
+- harsher redaction and transmission text
+
+Rules:
+
+- preserve the underlying dashboard structure
+- keep the manual control visible and reversible
+- do not block all interaction with a full-screen modal
+- keep popup text short and procedural
+- make the attack feel authored by the system, not explained by the app
+- continue to respect `prefers-reduced-motion`
+
+Future triggers can come from audio analysis, data thresholds, timed events, or hidden interactions, but the manual trigger should remain useful for testing.
+
 ## Voice
 
 The writing is terse, institutional, and slightly haunted.

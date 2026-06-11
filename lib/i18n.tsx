@@ -91,6 +91,51 @@ const messages = {
       label: "TRANSMISSION",
       fallback: "The future arrives first as a formatting problem.",
     },
+    attack: {
+      controls: {
+        engage: "BREACH TEST",
+        contain: "CONTAIN",
+      },
+      transmission: "The system is not under attack. It is accepting authorship.",
+      stats: {
+        signal: "SIGNAL OWNER",
+        auth: "AUTH CHAIN",
+        integrity: "INTEGRITY",
+        operator: "OPERATOR",
+        entities: "AFFECTED",
+      },
+      logs: {
+        breach: "> intrusion theater armed .......... FAIL",
+        identity: "> process identity rewritten ....... UNTRUSTED",
+        operator: "> operator presence inferred ....... ABSENT",
+        contained: "> intrusion theater contained ...... OK",
+        restored: "> process identity restored ........ OK",
+        operatorRestored: "> operator signal reacquired ....... OK",
+      },
+      dialogs: {
+        signal: {
+          title: "SIGNAL COLLISION",
+          body: "Two sources claim the same timestamp.",
+          code: "winner selected before contest",
+        },
+        auth: {
+          title: "AUTHORITY LEAK",
+          body: "Clearance copied itself into a lower room.",
+          code: "permission has no author",
+        },
+        memory: {
+          title: "MEMORY BREACH",
+          body: "Recovered text does not match the archive.",
+          code: "archive denies recovery",
+        },
+      },
+      status: {
+        clearance: "CLEARANCE: REVOKED",
+        operator: "OPERATOR: NOT FOUND",
+        uptime: "UPTIME: CONTESTED",
+        compromised: "SYSTEM COMPROMISED",
+      },
+    },
     status: {
       clearance: "CLEARANCE: LVL 5",
       session: "SESSION: {sessionId}",
@@ -164,6 +209,51 @@ const messages = {
       label: "TRANSMISION",
       fallback: "El futuro aparece primero como problema de formato.",
     },
+    attack: {
+      controls: {
+        engage: "PRUEBA BRECHA",
+        contain: "CONTENER",
+      },
+      transmission: "El sistema no esta bajo ataque. Esta aceptando autoria.",
+      stats: {
+        signal: "DUENO SENAL",
+        auth: "CADENA AUTH",
+        integrity: "INTEGRIDAD",
+        operator: "OPERADOR",
+        entities: "AFECTADAS",
+      },
+      logs: {
+        breach: "> teatro de intrusion armado ....... FALLA",
+        identity: "> identidad de proceso reescrita ... NO CONFIABLE",
+        operator: "> presencia operador inferida ...... AUSENTE",
+        contained: "> teatro de intrusion contenido .... OK",
+        restored: "> identidad de proceso restaurada .. OK",
+        operatorRestored: "> senal de operador recuperada ..... OK",
+      },
+      dialogs: {
+        signal: {
+          title: "COLISION DE SENAL",
+          body: "Dos fuentes reclaman la misma marca temporal.",
+          code: "ganador elegido antes del concurso",
+        },
+        auth: {
+          title: "FUGA DE AUTORIDAD",
+          body: "El acceso se copio a una sala inferior.",
+          code: "el permiso no tiene autor",
+        },
+        memory: {
+          title: "BRECHA DE MEMORIA",
+          body: "El texto recuperado no coincide con el archivo.",
+          code: "el archivo niega la recuperacion",
+        },
+      },
+      status: {
+        clearance: "ACCESO: REVOCADO",
+        operator: "OPERADOR: NO ENCONTRADO",
+        uptime: "ACTIVO: IMPUGNADO",
+        compromised: "SISTEMA COMPROMETIDO",
+      },
+    },
     status: {
       clearance: "ACCESO: NIVEL 5",
       session: "SESION: {sessionId}",
@@ -236,6 +326,51 @@ const messages = {
     transmission: {
       label: "TRANSMISSION",
       fallback: "Le futur apparait d'abord comme probleme de format.",
+    },
+    attack: {
+      controls: {
+        engage: "TEST BRECHE",
+        contain: "CONTENIR",
+      },
+      transmission: "Le systeme n'est pas attaque. Il accepte la paternite.",
+      stats: {
+        signal: "MAITRE SIGNAL",
+        auth: "CHAINE AUTH",
+        integrity: "INTEGRITE",
+        operator: "OPERATEUR",
+        entities: "AFFECTEES",
+      },
+      logs: {
+        breach: "> theatre intrusion arme ........... ECHEC",
+        identity: "> identite processus reecrite ...... NON FIABLE",
+        operator: "> presence operateur inferee ....... ABSENTE",
+        contained: "> theatre intrusion contenu ........ OK",
+        restored: "> identite processus restauree ..... OK",
+        operatorRestored: "> signal operateur recupere ........ OK",
+      },
+      dialogs: {
+        signal: {
+          title: "COLLISION SIGNAL",
+          body: "Deux sources reclament le meme horodatage.",
+          code: "vainqueur choisi avant concours",
+        },
+        auth: {
+          title: "FUITE D'AUTORITE",
+          body: "L'acces s'est copie dans une salle inferieure.",
+          code: "la permission n'a pas d'auteur",
+        },
+        memory: {
+          title: "BRECHE MEMOIRE",
+          body: "Le texte recupere ne correspond pas a l'archive.",
+          code: "l'archive nie la recuperation",
+        },
+      },
+      status: {
+        clearance: "ACCES : REVOQUE",
+        operator: "OPERATEUR : INTROUVABLE",
+        uptime: "DISPO : CONTESTEE",
+        compromised: "SYSTEME COMPROMIS",
+      },
     },
     status: {
       clearance: "ACCES : NIV 5",
